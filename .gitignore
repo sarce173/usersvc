@@ -1,0 +1,9 @@
+/api/gen/
+/out/
+bin/
+dist/
+*.exe
+*.test
+*.out
+.vscode/
+.idea/

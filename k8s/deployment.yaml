@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: usersvc
+  labels: { app: usersvc }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: usersvc }
+  template:
+    metadata:
+      labels: { app: usersvc }
+    spec:
+      containers:
+      - name: usersvc
+        image: ghcr.io/your-org/usersvc:latest
+        ports:
+        - name: grpc
+          containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        resources:
+          requests: { cpu: "100m", memory: "128Mi" }
+          limits: { cpu: "500m", memory: "512Mi" }
+        readinessProbe:
+          tcpSocket: { port: 8080 }
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket: { port: 8080 }
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        lifecycle:
+          preStop:
+            exec: { command: ["/bin/sh","-c","sleep 3"] }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: usersvc
+spec:
+  selector: { app: usersvc }
+  ports:
+  - name: grpc
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
